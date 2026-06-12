@@ -14,11 +14,21 @@ def test_parser_accepts_model_and_media_path():
     assert args.media_path == "sample.mp4"
 
 
-def test_resolve_model_maps_supported_codes_to_local_paths():
+def test_resolve_model_maps_supported_codes_to_project_model_paths():
+    project_root = Path(__file__).resolve().parents[1]
+
     spec = resolve_model("faster-large-v3")
 
     assert spec.engine == "faster-whisper"
-    assert spec.path == Path("/Users/a123/models/faster-whisper-large-v3")
+    assert spec.path == project_root / "model" / "faster-whisper-large-v3"
+
+
+def test_resolve_openai_model_defaults_to_project_model_path():
+    project_root = Path(__file__).resolve().parents[1]
+
+    spec = resolve_model("openai-large-v3")
+
+    assert spec.path == project_root / "model" / "whisper-large-v3"
 
 
 def test_resolve_model_allows_env_path_override(monkeypatch, tmp_path):

@@ -17,8 +17,8 @@ Output contract:
 
 | Code | Engine | Default local path | Override env var | CLI override |
 |---|---|---|---|---|
-| `faster-large-v3` | `faster-whisper` / CTranslate2 | `/Users/a123/models/faster-whisper-large-v3` | `VIDEO_STT_FASTER_LARGE_V3_DIR` | `--model-path` |
-| `openai-large-v3` | Transformers + OpenAI Whisper weights | `/Users/a123/models/whisper-large-v3` | `VIDEO_STT_OPENAI_LARGE_V3_DIR` | `--model-path` |
+| `faster-large-v3` | `faster-whisper` / CTranslate2 | `./model/faster-whisper-large-v3` | `VIDEO_STT_FASTER_LARGE_V3_DIR` | `--model-path` |
+| `openai-large-v3` | Transformers + OpenAI Whisper weights | `./model/whisper-large-v3` | `VIDEO_STT_OPENAI_LARGE_V3_DIR` | `--model-path` |
 
 Prefer `faster-large-v3` for real work unless the user explicitly asks to test the OpenAI/Transformers path.
 
@@ -37,14 +37,14 @@ If model files are not present on the current machine, download them:
 
 ```bash
 python3 -m pip install -U 'huggingface_hub[cli]'
-hf download Systran/faster-whisper-large-v3 --local-dir ./models/faster-whisper-large-v3
+hf download Systran/faster-whisper-large-v3 --local-dir ./model/faster-whisper-large-v3
 hf download openai/whisper-large-v3 \
   model.safetensors config.json generation_config.json preprocessor_config.json \
   tokenizer.json tokenizer_config.json vocab.json merges.txt normalizer.json \
   special_tokens_map.json added_tokens.json \
-  --local-dir ./models/whisper-large-v3
-export VIDEO_STT_FASTER_LARGE_V3_DIR="$PWD/models/faster-whisper-large-v3"
-export VIDEO_STT_OPENAI_LARGE_V3_DIR="$PWD/models/whisper-large-v3"
+  --local-dir ./model/whisper-large-v3
+export VIDEO_STT_FASTER_LARGE_V3_DIR="$PWD/model/faster-whisper-large-v3"
+export VIDEO_STT_OPENAI_LARGE_V3_DIR="$PWD/model/whisper-large-v3"
 ```
 
 ## Common run commands
@@ -59,7 +59,7 @@ Use an explicit model path when the model is not in the default location:
 
 ```bash
 video-stt faster-large-v3 /path/to/video.mp4 \
-  --model-path ./models/faster-whisper-large-v3 \
+  --model-path ./model/faster-whisper-large-v3 \
   --language ja
 ```
 
@@ -93,7 +93,7 @@ video-stt faster-large-v3 /path/to/video.mp4 --device cuda --compute-type float1
 - Add tests before changing behavior.
 - Run `PYTHONPATH=src python3 -m pytest tests -q` before committing.
 - Do not commit downloaded model files, generated `.srt` files, virtualenvs, or caches.
-- Keep model locations configurable through environment variables so other machines do not need `/Users/a123/...` paths.
+- Keep model locations configurable through `--model-path` or environment variables when a machine does not use the default `./model/...` paths.
 
 ## Troubleshooting
 

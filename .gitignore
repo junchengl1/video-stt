@@ -4,5 +4,6 @@ __pycache__/
 .venv/
 *.egg-info/
 *.srt
+model/
 models/
 .DS_Store

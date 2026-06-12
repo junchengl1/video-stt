@@ -17,17 +17,21 @@ class ModelSpec:
     env_var: str
 
 
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+DEFAULT_MODEL_ROOT = PROJECT_ROOT / "model"
+
+
 MODEL_SPECS = {
     "faster-large-v3": ModelSpec(
         code="faster-large-v3",
         engine="faster-whisper",
-        path=Path("/Users/a123/models/faster-whisper-large-v3"),
+        path=DEFAULT_MODEL_ROOT / "faster-whisper-large-v3",
         env_var="VIDEO_STT_FASTER_LARGE_V3_DIR",
     ),
     "openai-large-v3": ModelSpec(
         code="openai-large-v3",
         engine="openai-whisper",
-        path=Path("/Users/a123/models/whisper-large-v3"),
+        path=DEFAULT_MODEL_ROOT / "whisper-large-v3",
         env_var="VIDEO_STT_OPENAI_LARGE_V3_DIR",
     ),
 }

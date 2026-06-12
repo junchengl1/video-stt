@@ -4,8 +4,8 @@
 
 | 模型代号 | 引擎 | 默认本机路径 | 其他机器覆盖方式 | CLI 覆盖 |
 |---|---|---|---|---|
-| `faster-large-v3` | faster-whisper / CTranslate2 | `/Users/a123/models/faster-whisper-large-v3` | `VIDEO_STT_FASTER_LARGE_V3_DIR` | `--model-path` |
-| `openai-large-v3` | Transformers + OpenAI Whisper 权重 | `/Users/a123/models/whisper-large-v3` | `VIDEO_STT_OPENAI_LARGE_V3_DIR` | `--model-path` |
+| `faster-large-v3` | faster-whisper / CTranslate2 | `./model/faster-whisper-large-v3` | `VIDEO_STT_FASTER_LARGE_V3_DIR` | `--model-path` |
+| `openai-large-v3` | Transformers + OpenAI Whisper 权重 | `./model/whisper-large-v3` | `VIDEO_STT_OPENAI_LARGE_V3_DIR` | `--model-path` |
 
 > 给 AI Agent：仓库根目录有 `AGENTS.md`，里面是更直接的操作手册。
 
@@ -40,7 +40,7 @@ python3 -m pytest tests -q
 ```bash
 python3 -m pip install -U 'huggingface_hub[cli]'
 hf download Systran/faster-whisper-large-v3 \
-  --local-dir ./models/faster-whisper-large-v3
+  --local-dir ./model/faster-whisper-large-v3
 ```
 
 如果也要下载 OpenAI 原版权重：
@@ -50,21 +50,21 @@ hf download openai/whisper-large-v3 \
   model.safetensors config.json generation_config.json preprocessor_config.json \
   tokenizer.json tokenizer_config.json vocab.json merges.txt normalizer.json \
   special_tokens_map.json added_tokens.json \
-  --local-dir ./models/whisper-large-v3
+  --local-dir ./model/whisper-large-v3
 ```
 
 设置模型路径：
 
 ```bash
-export VIDEO_STT_FASTER_LARGE_V3_DIR="$PWD/models/faster-whisper-large-v3"
-export VIDEO_STT_OPENAI_LARGE_V3_DIR="$PWD/models/whisper-large-v3"
+export VIDEO_STT_FASTER_LARGE_V3_DIR="$PWD/model/faster-whisper-large-v3"
+export VIDEO_STT_OPENAI_LARGE_V3_DIR="$PWD/model/whisper-large-v3"
 ```
 
 也可以不设置环境变量，运行时直接传模型路径：
 
 ```bash
 video-stt faster-large-v3 /path/to/video.mp4 \
-  --model-path ./models/faster-whisper-large-v3 \
+  --model-path ./model/faster-whisper-large-v3 \
   --language ja
 ```
 
@@ -74,7 +74,7 @@ video-stt faster-large-v3 /path/to/video.mp4 \
 --model-path > 环境变量 > 默认路径
 ```
 
-> 模型目录已被 `.gitignore` 忽略，不要把 3GB+ 模型文件提交进 Git。
+> `model/` 目录已被 `.gitignore` 忽略，不要把 3GB+ 模型文件提交进 Git。
 
 ## 推荐使用
 
@@ -162,6 +162,6 @@ PYTHONPATH=src python3 -m pytest tests -q
 2. 跑 `python3 -m pip install -e '.[test]'`。
 3. 跑 `PYTHONPATH=src python3 -m pytest tests -q`。
 4. 确认模型路径：
-   - 本机默认：`/Users/a123/models/...`
+   - 默认：项目根目录下的 `./model/...`
    - 其他机器：用 `VIDEO_STT_FASTER_LARGE_V3_DIR` / `VIDEO_STT_OPENAI_LARGE_V3_DIR` 覆盖。
 5. 优先执行：`video-stt faster-large-v3 <media_path> --model-path <model_dir> --language <lang>`。
