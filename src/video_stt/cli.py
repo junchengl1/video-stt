@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import math
+import os
 import platform
 from dataclasses import dataclass
 from pathlib import Path
@@ -13,6 +14,7 @@ class ModelSpec:
     code: str
     engine: str
     path: Path
+    env_var: str
 
 
 MODEL_SPECS = {
@@ -20,11 +22,13 @@ MODEL_SPECS = {
         code="faster-large-v3",
         engine="faster-whisper",
         path=Path("/Users/a123/models/faster-whisper-large-v3"),
+        env_var="VIDEO_STT_FASTER_LARGE_V3_DIR",
     ),
     "openai-large-v3": ModelSpec(
         code="openai-large-v3",
         engine="openai-whisper",
         path=Path("/Users/a123/models/whisper-large-v3"),
+        env_var="VIDEO_STT_OPENAI_LARGE_V3_DIR",
     ),
 }
 
@@ -79,10 +83,19 @@ def build_parser() -> argparse.ArgumentParser:
 
 def resolve_model(code: str) -> ModelSpec:
     try:
-        return MODEL_SPECS[code]
+        spec = MODEL_SPECS[code]
     except KeyError as exc:
         supported = ", ".join(sorted(MODEL_SPECS))
         raise ValueError(f"Unsupported model code: {code}. Supported: {supported}") from exc
+
+    if override := os.environ.get(spec.env_var):
+        return ModelSpec(
+            code=spec.code,
+            engine=spec.engine,
+            path=Path(override).expanduser().resolve(),
+            env_var=spec.env_var,
+        )
+    return spec
 
 
 def make_output_path(media_path: Path, output: str | None) -> Path:

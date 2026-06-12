@@ -21,6 +21,15 @@ def test_resolve_model_maps_supported_codes_to_local_paths():
     assert spec.path == Path("/Users/a123/models/faster-whisper-large-v3")
 
 
+def test_resolve_model_allows_env_path_override(monkeypatch, tmp_path):
+    custom_model_dir = tmp_path / "models" / "faster-whisper-large-v3"
+    monkeypatch.setenv("VIDEO_STT_FASTER_LARGE_V3_DIR", str(custom_model_dir))
+
+    spec = resolve_model("faster-large-v3")
+
+    assert spec.path == custom_model_dir
+
+
 def test_resolve_model_rejects_unknown_code():
     with pytest.raises(ValueError, match="Unsupported model code"):
         resolve_model("unknown")
