@@ -2,10 +2,10 @@
 
 把视频/音频文件转成 `.srt` 字幕文件。项目默认支持两个本地 Whisper large-v3 模型：
 
-| 模型代号 | 引擎 | 默认本机路径 | 其他机器覆盖方式 |
-|---|---|---|---|
-| `faster-large-v3` | faster-whisper / CTranslate2 | `/Users/a123/models/faster-whisper-large-v3` | `VIDEO_STT_FASTER_LARGE_V3_DIR` |
-| `openai-large-v3` | Transformers + OpenAI Whisper 权重 | `/Users/a123/models/whisper-large-v3` | `VIDEO_STT_OPENAI_LARGE_V3_DIR` |
+| 模型代号 | 引擎 | 默认本机路径 | 其他机器覆盖方式 | CLI 覆盖 |
+|---|---|---|---|---|
+| `faster-large-v3` | faster-whisper / CTranslate2 | `/Users/a123/models/faster-whisper-large-v3` | `VIDEO_STT_FASTER_LARGE_V3_DIR` | `--model-path` |
+| `openai-large-v3` | Transformers + OpenAI Whisper 权重 | `/Users/a123/models/whisper-large-v3` | `VIDEO_STT_OPENAI_LARGE_V3_DIR` | `--model-path` |
 
 > 给 AI Agent：仓库根目录有 `AGENTS.md`，里面是更直接的操作手册。
 
@@ -58,6 +58,20 @@ hf download openai/whisper-large-v3 \
 ```bash
 export VIDEO_STT_FASTER_LARGE_V3_DIR="$PWD/models/faster-whisper-large-v3"
 export VIDEO_STT_OPENAI_LARGE_V3_DIR="$PWD/models/whisper-large-v3"
+```
+
+也可以不设置环境变量，运行时直接传模型路径：
+
+```bash
+video-stt faster-large-v3 /path/to/video.mp4 \
+  --model-path ./models/faster-whisper-large-v3 \
+  --language ja
+```
+
+模型路径优先级：
+
+```text
+--model-path > 环境变量 > 默认路径
 ```
 
 > 模型目录已被 `.gitignore` 忽略，不要把 3GB+ 模型文件提交进 Git。
@@ -150,4 +164,4 @@ PYTHONPATH=src python3 -m pytest tests -q
 4. 确认模型路径：
    - 本机默认：`/Users/a123/models/...`
    - 其他机器：用 `VIDEO_STT_FASTER_LARGE_V3_DIR` / `VIDEO_STT_OPENAI_LARGE_V3_DIR` 覆盖。
-5. 优先执行：`video-stt faster-large-v3 <media_path> --language <lang>`。
+5. 优先执行：`video-stt faster-large-v3 <media_path> --model-path <model_dir> --language <lang>`。

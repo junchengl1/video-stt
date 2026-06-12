@@ -52,6 +52,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Output subtitle path. Defaults to input file with .srt suffix.",
     )
     parser.add_argument(
+        "--model-path",
+        default=None,
+        help="Optional path to the local model directory. Overrides the model-specific environment variable and default path.",
+    )
+    parser.add_argument(
         "--language",
         default=None,
         help="Optional language code, e.g. ja, zh, en. Auto-detect when omitted.",
@@ -81,13 +86,20 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def resolve_model(code: str) -> ModelSpec:
+def resolve_model(code: str, model_path: str | None = None) -> ModelSpec:
     try:
         spec = MODEL_SPECS[code]
     except KeyError as exc:
         supported = ", ".join(sorted(MODEL_SPECS))
         raise ValueError(f"Unsupported model code: {code}. Supported: {supported}") from exc
 
+    if model_path:
+        return ModelSpec(
+            code=spec.code,
+            engine=spec.engine,
+            path=Path(model_path).expanduser().resolve(),
+            env_var=spec.env_var,
+        )
     if override := os.environ.get(spec.env_var):
         return ModelSpec(
             code=spec.code,
@@ -218,7 +230,7 @@ def run(argv: Sequence[str] | None = None) -> Path:
     parser = build_parser()
     args = parser.parse_args(argv)
     try:
-        spec = resolve_model(args.model)
+        spec = resolve_model(args.model, args.model_path)
     except ValueError as exc:
         parser.error(str(exc))
 

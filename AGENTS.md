@@ -15,10 +15,10 @@ Output contract:
 
 ## Supported model codes
 
-| Code | Engine | Default local path | Override env var |
-|---|---|---|---|
-| `faster-large-v3` | `faster-whisper` / CTranslate2 | `/Users/a123/models/faster-whisper-large-v3` | `VIDEO_STT_FASTER_LARGE_V3_DIR` |
-| `openai-large-v3` | Transformers + OpenAI Whisper weights | `/Users/a123/models/whisper-large-v3` | `VIDEO_STT_OPENAI_LARGE_V3_DIR` |
+| Code | Engine | Default local path | Override env var | CLI override |
+|---|---|---|---|---|
+| `faster-large-v3` | `faster-whisper` / CTranslate2 | `/Users/a123/models/faster-whisper-large-v3` | `VIDEO_STT_FASTER_LARGE_V3_DIR` | `--model-path` |
+| `openai-large-v3` | Transformers + OpenAI Whisper weights | `/Users/a123/models/whisper-large-v3` | `VIDEO_STT_OPENAI_LARGE_V3_DIR` | `--model-path` |
 
 Prefer `faster-large-v3` for real work unless the user explicitly asks to test the OpenAI/Transformers path.
 
@@ -55,6 +55,14 @@ Recommended path:
 video-stt faster-large-v3 /path/to/video.mp4 --language ja
 ```
 
+Use an explicit model path when the model is not in the default location:
+
+```bash
+video-stt faster-large-v3 /path/to/video.mp4 \
+  --model-path ./models/faster-whisper-large-v3 \
+  --language ja
+```
+
 Equivalent module invocation:
 
 ```bash
@@ -81,7 +89,7 @@ video-stt faster-large-v3 /path/to/video.mp4 --device cuda --compute-type float1
 
 ## Development rules
 
-- Keep the CLI contract stable: `video-stt <model> <media_path> [-o output.srt]`.
+- Keep the CLI contract stable: `video-stt <model> <media_path> [-o output.srt] [--model-path model_dir]`.
 - Add tests before changing behavior.
 - Run `PYTHONPATH=src python3 -m pytest tests -q` before committing.
 - Do not commit downloaded model files, generated `.srt` files, virtualenvs, or caches.
