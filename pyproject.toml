@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "video-stt"
+version = "0.1.0"
+description = "Generate SRT subtitles from video/audio files using local Whisper large-v3 models."
+requires-python = ">=3.11"
+dependencies = [
+  "faster-whisper>=1.0.0",
+]
+
+[project.optional-dependencies]
+openai = [
+  "transformers>=4.35",
+  "torch",
+  "accelerate",
+]
+test = [
+  "pytest>=8",
+]
+
+[project.scripts]
+video-stt = "video_stt.cli:main"
