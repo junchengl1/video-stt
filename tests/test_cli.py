@@ -3,7 +3,14 @@ from pathlib import Path
 
 import pytest
 
-from video_stt.cli import build_parser, resolve_model, make_output_path, format_timestamp, write_srt
+from video_stt.cli import (
+    build_parser,
+    choose_openai_device_and_dtype,
+    format_timestamp,
+    make_output_path,
+    resolve_model,
+    write_srt,
+)
 
 
 def test_parser_accepts_model_and_media_path():
@@ -65,6 +72,79 @@ def test_parser_accepts_model_path_option():
 def test_resolve_model_rejects_unknown_code():
     with pytest.raises(ValueError, match="Unsupported model code"):
         resolve_model("unknown")
+
+
+def test_openai_cuda_device_uses_float16(monkeypatch):
+    class FakeCuda:
+        @staticmethod
+        def is_available():
+            return True
+
+    class FakeTorch:
+        cuda = FakeCuda()
+        float16 = "float16"
+        float32 = "float32"
+
+    device, dtype = choose_openai_device_and_dtype("cuda", FakeTorch)
+
+    assert device == "cuda"
+    assert dtype == "float16"
+
+
+def test_openai_auto_prefers_cuda_when_available(monkeypatch):
+    class FakeCuda:
+        @staticmethod
+        def is_available():
+            return True
+
+    class FakeMPS:
+        @staticmethod
+        def is_available():
+            return True
+
+    class FakeBackends:
+        mps = FakeMPS()
+
+    class FakeTorch:
+        cuda = FakeCuda()
+        backends = FakeBackends()
+        float16 = "float16"
+        float32 = "float32"
+
+    monkeypatch.setattr("video_stt.cli.platform.system", lambda: "Linux")
+
+    device, dtype = choose_openai_device_and_dtype("auto", FakeTorch)
+
+    assert device == "cuda"
+    assert dtype == "float16"
+
+
+def test_openai_auto_uses_cpu_float32_when_no_accelerator(monkeypatch):
+    class FakeCuda:
+        @staticmethod
+        def is_available():
+            return False
+
+    class FakeMPS:
+        @staticmethod
+        def is_available():
+            return False
+
+    class FakeBackends:
+        mps = FakeMPS()
+
+    class FakeTorch:
+        cuda = FakeCuda()
+        backends = FakeBackends()
+        float16 = "float16"
+        float32 = "float32"
+
+    monkeypatch.setattr("video_stt.cli.platform.system", lambda: "Linux")
+
+    device, dtype = choose_openai_device_and_dtype("auto", FakeTorch)
+
+    assert device == "cpu"
+    assert dtype == "float32"
 
 
 def test_make_output_path_defaults_to_srt_next_to_input(tmp_path):

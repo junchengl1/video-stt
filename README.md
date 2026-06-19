@@ -145,7 +145,16 @@ python3 -m pip install -e '.[openai]'
 video-stt openai-large-v3 /path/to/video.mp4 --language ja
 ```
 
-当前项目里保留这个入口，但实际使用优先建议 `faster-large-v3`。
+在 NVIDIA GPU 机器上可显式使用 CUDA；`cuda`/`mps` 默认使用 `float16`，CPU 使用 `float32`：
+
+```bash
+video-stt openai-large-v3 /path/to/video.mp4 \
+  --device cuda \
+  --model-path ./model/whisper-large-v3 \
+  --language ja
+```
+
+当前项目里保留这个入口；如果需要 OpenAI 原版权重路径或更高精度语义，可使用 `openai-large-v3`，日常速度优先仍建议 `faster-large-v3`。
 
 ## 开发测试
 

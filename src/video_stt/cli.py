@@ -181,11 +181,27 @@ def transcribe_with_faster_whisper(
     return [(segment.start, segment.end, segment.text) for segment in segments]
 
 
+def choose_openai_device_and_dtype(requested: str, torch_module) -> tuple[str, object]:
+    if requested == "cuda":
+        if not torch_module.cuda.is_available():
+            raise RuntimeError("--device cuda was requested, but torch.cuda.is_available() is False")
+        return "cuda", torch_module.float16
+    if requested == "cpu":
+        return "cpu", torch_module.float32
+
+    if torch_module.cuda.is_available():
+        return "cuda", torch_module.float16
+    if platform.system() == "Darwin" and torch_module.backends.mps.is_available():
+        return "mps", torch_module.float16
+    return "cpu", torch_module.float32
+
+
 def transcribe_with_openai_whisper(
     model_path: Path,
     media_path: Path,
     *,
     language: str | None,
+    device: str,
 ) -> list[tuple[float, float, str]]:
     try:
         import torch
@@ -196,22 +212,21 @@ def transcribe_with_openai_whisper(
             "python3 -m pip install 'transformers>=4.35' torch accelerate"
         ) from exc
 
-    device = "mps" if platform.system() == "Darwin" and torch.backends.mps.is_available() else "cpu"
-    dtype = torch.float16 if device == "mps" else torch.float32
+    resolved_device, dtype = choose_openai_device_and_dtype(device, torch)
     model = AutoModelForSpeechSeq2Seq.from_pretrained(
         str(model_path),
-        torch_dtype=dtype,
+        dtype=dtype,
         low_cpu_mem_usage=True,
         use_safetensors=True,
-    ).to(device)
+    ).to(resolved_device)
     processor = AutoProcessor.from_pretrained(str(model_path))
     pipe = pipeline(
         "automatic-speech-recognition",
         model=model,
         tokenizer=processor.tokenizer,
         feature_extractor=processor.feature_extractor,
-        torch_dtype=dtype,
-        device=device,
+        dtype=dtype,
+        device=resolved_device,
         return_timestamps=True,
     )
     generate_kwargs = {"task": "transcribe"}
@@ -262,6 +277,7 @@ def run(argv: Sequence[str] | None = None) -> Path:
             spec.path,
             media_path,
             language=args.language,
+            device=args.device,
         )
     else:
         raise AssertionError(f"Unhandled engine: {spec.engine}")
